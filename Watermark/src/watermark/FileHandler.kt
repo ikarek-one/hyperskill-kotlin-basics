@@ -19,14 +19,6 @@ fun fileToImgOrThrow(filename: String): BufferedImage {
 
 fun saveImgToFileOrThrow(filename: String, img: BufferedImage) {
     try {
-//        if (filename.contains('\\')) {
-//            val directoryPath = filename.substringBeforeLast('\\')
-//            val directoryFile = File(directoryPath)
-//            if (!directoryFile.exists()) {
-//                directoryFile.mkdirs()
-//            }
-//        }
-
         val outputFile = File(filename)
         val wasSaved = ImageIO.write(img, filename.takeLast(3), outputFile)
         if (wasSaved && outputFile.exists()) return

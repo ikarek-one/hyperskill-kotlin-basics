@@ -15,6 +15,14 @@ fun runApp() {
 
     checkIfDimensionsEqual(img, watermark)
 
+    val usingAlphaChannel: Boolean =
+        if (isTranslucent(watermark)) {
+            println("Do you want to use the watermark's Alpha channel?")
+            readln().trim().lowercase().equals("yes")
+        } else {
+            false
+        }
+
     println("Input the watermark transparency percentage (Integer 0-100):")
     val transparencyStr = readln()
     val transparency = transparencyToIntOrThrow(transparencyStr)
@@ -24,7 +32,7 @@ fun runApp() {
     val outputName = readln()
     checkPngJpgExtension(outputName)
 
-    val watermarked = addWatermark(img, watermark, transparency)
+    val watermarked = addWatermark(img, watermark, transparency, usingAlphaChannel)
 
     saveImgToFileOrThrow(outputName, watermarked)
     println("The watermarked image $outputName has been created.")
