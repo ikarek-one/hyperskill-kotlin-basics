@@ -1,15 +1,12 @@
 package watermark
 
-import java.awt.image.BufferedImage
-import java.io.File
-import java.io.IOException
-import javax.imageio.ImageIO
+import kotlin.system.exitProcess
 
 fun main() {
-    stage3()
+    stage4()
 }
 
-fun stage3() {
+fun stage4() {
     try {
         runApp()
     } catch (iatExc: InformAndTerminateException) {
@@ -17,6 +14,7 @@ fun stage3() {
         if (iatExc.cause != null) {
             throw iatExc.cause
         }
+        exitProcess(0)
     }
 }
 

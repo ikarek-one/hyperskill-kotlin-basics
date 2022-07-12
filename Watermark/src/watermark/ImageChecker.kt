@@ -27,3 +27,6 @@ fun checkIfDimensionsEqual(bufImg1: BufferedImage, bufImg2: BufferedImage) {
 
 fun isTranslucent(bufImg: BufferedImage): Boolean =
     bufImg.transparency == BufferedImage.TRANSLUCENT
+
+fun hasAlphaChannel(bufImg: BufferedImage): Boolean =
+    bufImg.colorModel.hasAlpha()

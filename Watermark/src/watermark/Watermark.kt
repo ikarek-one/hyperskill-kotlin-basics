@@ -7,15 +7,23 @@ fun addWatermark(
     img: BufferedImage,
     watermark: BufferedImage,
     transparency: Int,
-    usingAlphaChannel: Boolean = false
+    usingAlphaChannel: Boolean = false,
+    transparencyColor: Color? = null
 ): BufferedImage {
     val watermarked = BufferedImage(img.width, img.height, BufferedImage.TYPE_INT_RGB)
+
+    if (usingAlphaChannel && transparencyColor != null) {
+        throw IllegalStateException("You must use either transparency color or alpha channel!")
+    }
 
     for (x in 0 until img.width) {
         for (y in 0 until img.height) {
             val i = Color(img.getRGB(x, y), usingAlphaChannel)
             val w = Color(watermark.getRGB(x, y), usingAlphaChannel)
-            val col = if (usingAlphaChannel && w.alpha == 0) {
+            val col = if (
+                (usingAlphaChannel && w.alpha == 0)
+                || isTransparencyColor(w, transparencyColor)
+            ) {
                 i
             } else if (usingAlphaChannel && w.alpha != 255) {
                 throw Exception(
@@ -36,3 +44,9 @@ fun convertColor(i: Color, w: Color, weight: Int): Color = Color(
     (weight * w.green + (100 - weight) * i.green) / 100,
     (weight * w.blue + (100 - weight) * i.blue) / 100
 )
+
+fun isTransparencyColor(color: Color, transparencyColor: Color?) =
+    if (transparencyColor == null)
+        false
+    else
+        transparencyColor == color
