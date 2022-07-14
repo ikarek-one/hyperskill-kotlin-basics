@@ -3,50 +3,65 @@ package watermark
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-fun addWatermark(
-    img: BufferedImage,
-    watermark: BufferedImage,
-    transparency: Int,
-    usingAlphaChannel: Boolean = false,
-    transparencyColor: Color? = null
-): BufferedImage {
-    val watermarked = BufferedImage(img.width, img.height, BufferedImage.TYPE_INT_RGB)
+object Watermark {
 
-    if (usingAlphaChannel && transparencyColor != null) {
-        throw IllegalStateException("You must use either transparency color or alpha channel!")
-    }
+    fun singleWatermark(
+        img: BufferedImage,
+        watermark: BufferedImage,
+        transformingFun: (Color, Color) -> Color,
+        posX: Int,
+        posY: Int,
+    ): BufferedImage {
+        val modified = cloneBufferedImage(img)
+        val hasWatermarkAlpha = watermark.colorModel.hasAlpha()
 
-    for (x in 0 until img.width) {
-        for (y in 0 until img.height) {
-            val i = Color(img.getRGB(x, y), usingAlphaChannel)
-            val w = Color(watermark.getRGB(x, y), usingAlphaChannel)
-            val col = if (
-                (usingAlphaChannel && w.alpha == 0)
-                || isTransparencyColor(w, transparencyColor)
-            ) {
-                i
-            } else if (usingAlphaChannel && w.alpha != 255) {
-                throw Exception(
-                    "Alpha channel of pixel (x = $x, y = $y) has alpha val = ${w.alpha} not in [0,255]"
-                )
-            } else {
-                convertColor(i, w, transparency)
+        for (x in 0 until watermark.width) {
+            for (y in 0 until watermark.height) {
+                val imgX = x + posX
+                val imgY = y + posY
+
+                val i = Color(img.getRGB(imgX, imgY))
+                val w = Color(watermark.getRGB(x, y), hasWatermarkAlpha)
+
+                val col = transformingFun(i, w)
+
+                modified.setRGB(imgX, imgY, col.rgb)
             }
-            watermarked.setRGB(x, y, col.rgb)
         }
+        return modified
     }
 
-    return watermarked
+    fun watermarkGrid(
+        img: BufferedImage,
+        watermark: BufferedImage,
+        tranformingFun: (Color, Color) -> Color,
+    ): BufferedImage {
+        val modified = cloneBufferedImage(img)
+        val hasWatermarkAlpha = watermark.colorModel.hasAlpha()
+
+        for (iX in 0 until img.width) {
+            for (iY in 0 until img.height) {
+                val wX = iX % watermark.width
+                val wY = iY % watermark.height
+
+                val i = Color(img.getRGB(iX, iY))
+                val w = Color(watermark.getRGB(wX, wY), hasWatermarkAlpha)
+                val col = tranformingFun(i, w)
+
+                modified.setRGB(iX, iY, col.rgb)
+            }
+        }
+        return modified
+    }
+
+    fun cloneBufferedImage(original: BufferedImage): BufferedImage {
+        return BufferedImage(
+            original.colorModel,
+            original.copyData(null),
+            original.colorModel.isAlphaPremultiplied,
+            null
+        )
+    }
+
 }
 
-fun convertColor(i: Color, w: Color, weight: Int): Color = Color(
-    (weight * w.red + (100 - weight) * i.red) / 100,
-    (weight * w.green + (100 - weight) * i.green) / 100,
-    (weight * w.blue + (100 - weight) * i.blue) / 100
-)
-
-fun isTransparencyColor(color: Color, transparencyColor: Color?) =
-    if (transparencyColor == null)
-        false
-    else
-        transparencyColor == color

@@ -1,14 +1,18 @@
 package watermark
 
+import watermark.WatermarkApp.watermarkApp
 import kotlin.system.exitProcess
 
 fun main() {
-    stage4()
+    runApp()
 }
 
-fun stage4() {
+fun runApp(runner: IRunner? = null) {
     try {
-        runApp()
+        if (runner == null)
+            watermarkApp()
+        else
+            watermarkApp(runner)
     } catch (iatExc: InformAndTerminateException) {
         println(iatExc.message)
         if (iatExc.cause != null) {
