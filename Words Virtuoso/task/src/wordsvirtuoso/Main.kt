@@ -36,11 +36,9 @@ class WordsVirtuoso {
 
         val startTime = System.currentTimeMillis()
 
-
         while (playRound(secretWord, allWords, clues, incorrectChars)) {
             tries += 1
         }
-
 
         val endTime = System.currentTimeMillis()
         val durationInSeconds = (endTime - startTime) / 1000
@@ -92,7 +90,7 @@ class WordsVirtuoso {
             .sorted()
             .joinToString("")
             .uppercase()
-        println(incorrectCharsUppercase)
+        println(Color.AZURE.coloring(incorrectCharsUppercase))
 
         return true
     }
@@ -101,17 +99,24 @@ class WordsVirtuoso {
         val uppercaseSecret = secret.uppercase()
         val incorrectCharsEntered = mutableListOf<Char>()
 
-        return guess.withIndex().map { (idx, ch) ->
+        return guess.withIndex().joinToString(separator = "") { (idx, ch) ->
             val uppercase = ch.uppercase()
             if (uppercase == secret[idx].uppercase()) {
-                uppercase[0]
+                Color.GREEN.coloring(uppercase)
             } else if (uppercaseSecret.contains(uppercase)) {
-                ch.lowercase()[0]
+                Color.YELLOW.coloring(uppercase)
             } else {
                 incorrectCharsEntered.add(ch)
-                '_'
+                Color.GREY.coloring(uppercase)
             }
-        }.joinToString(separator = "") to incorrectCharsEntered
+        } to incorrectCharsEntered.toList()
+    }
+
+    private enum class Color(val coloring: (String) -> String) {
+        GREEN({ str -> "\u001B[48:5:10m$str\u001B[0m" }),
+        YELLOW({ str -> "\u001B[48:5:11m$str\u001B[0m" }),
+        GREY({ str -> "\u001B[48:5:7m$str\u001B[0m" }),
+        AZURE({ str -> "\u001B[48:5:14m$str\u001B[0m" })
     }
 
     private sealed class LoadingResult
@@ -164,7 +169,7 @@ class WordsVirtuoso {
         val desiredLength = 5
 
         if (string.length != desiredLength) {
-            return CheckFailed("The input isn't a 5-letter word.")
+            return CheckFailed("The input isn't a $desiredLength-letter word.")
         }
 
         if (string.any { ch -> ch !in 'a'..'z' && ch !in 'A'..'Z' }) {
